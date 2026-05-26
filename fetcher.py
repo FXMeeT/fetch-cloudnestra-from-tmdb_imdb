@@ -17,11 +17,16 @@ def build_url(tmdb=None, imdb=None):
 def fetch():
     tmdb = request.args.get("tmdb")
     imdb = request.args.get("imdb")
+    custom_url = request.args.get("url")
 
-    url = build_url(tmdb=tmdb, imdb=imdb)
+    # priority: url > imdb/tmdb builder
+    if custom_url:
+        url = custom_url
+    else:
+        url = build_url(tmdb=tmdb, imdb=imdb)
 
     if not url:
-        return jsonify({"error": "missing tmdb or imdb"}), 400
+        return jsonify({"error": "missing tmdb, imdb, or url"}), 400
 
     try:
         headers = {
@@ -41,7 +46,11 @@ def fetch():
                 iframes.append(src)
 
         return jsonify({
-            "input": {"tmdb": tmdb, "imdb": imdb},
+            "input": {
+                "tmdb": tmdb,
+                "imdb": imdb,
+                "url": custom_url
+            },
             "embed_url": url,
             "iframe_count": len(iframes),
             "iframes": iframes
